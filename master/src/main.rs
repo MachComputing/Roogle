@@ -1,8 +1,10 @@
 use crossbeam::deque::Injector;
+use crossbeam::utils::Backoff;
 use protocol::{master, Payload};
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
+use std::process::exit;
 use std::thread;
 
 fn main() {
@@ -28,10 +30,27 @@ fn main() {
         if let Ok(lines) = read_lines(&args[1]) {
             for line in lines {
                 if let Ok(l) = line {
-                    map_global_queue.push(l);
+                    let backoff = Backoff::new();
+                    loop {
+                        if map_global_queue.len() < 1000 {
+                            map_global_queue.push(l);
+                            break;
+                        }
+                        backoff.spin();
+                    }
                 }
             }
         }
+
+        while !map_global_queue.is_empty() {
+            thread::sleep(std::time::Duration::from_millis(100));
+        }
+
+        while !red_global_queue.is_empty() {
+            thread::sleep(std::time::Duration::from_millis(100));
+        }
+
+        exit(0);
     })
 }
 
