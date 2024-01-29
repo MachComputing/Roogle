@@ -8,7 +8,7 @@ fn main() {
     let n_reducers = args[1].parse::<usize>().unwrap();
     let n_mappers = args[2].parse::<usize>().unwrap();
 
-    let bench_file = "testinput.txt";
+    let bench_file = "testinputLarger.txt";
     let mut line_count = 0;
     let file = std::fs::File::open(bench_file).unwrap();
     let reader = std::io::BufReader::new(file);
@@ -25,7 +25,7 @@ fn main() {
         .unwrap();
 
     let mut master = Command::new("target/release/master")
-        .arg("testinput.txt")
+        .arg("testinputLarger.txt")
         .spawn()
         .expect("failed to execute process");
     thread::sleep(Duration::from_secs(1));
