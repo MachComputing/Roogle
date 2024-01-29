@@ -1,64 +1,34 @@
-use crossbeam::deque::Injector;
-use crossbeam::utils::Backoff;
-use protocol::{master, Payload};
-use std::fs::File;
-use std::io::{self, BufRead};
-use std::path::Path;
-use std::process::exit;
-use std::thread;
+use protocol::nonblocking::master;
+use tokio::fs::File;
+use tokio::io::{AsyncBufReadExt, BufReader};
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args: Vec<String> = std::env::args().collect();
+    let file = File::open(&args[1]).await.unwrap();
+    let mut file = BufReader::new(file);
+    let master = master::Master::new().await;
 
-    let protocol = &master::Master::new();
+    let (inlet_write, inlet_read) = async_channel::bounded::<Box<[u8]>>(100);
 
-    let map_global_queue: Injector<String> = Injector::new();
-    let red_global_queue: Injector<Payload> = Injector::new();
+    let master_thread = tokio::spawn(async move { master.dispatch(inlet_read).await });
 
-    thread::scope(|scope| {
-        // Start the mapping thread
-        scope.spawn(|| {
-            protocol.start_listening_map(&map_global_queue, &red_global_queue);
-        });
-
-        // Start the reducing thread
-        scope.spawn(|| {
-            protocol.start_listening_reduce(&red_global_queue);
-        });
-
-        // Read the file line by line and send the lines to the mapping thread
-        if let Ok(lines) = read_lines(&args[1]) {
-            for line in lines {
-                if let Ok(l) = line {
-                    let backoff = Backoff::new();
-                    loop {
-                        if map_global_queue.len() < 1000 {
-                            map_global_queue.push(l);
-                            break;
-                        }
-                        backoff.spin();
-                    }
-                }
+    loop {
+        let mut buf = String::new();
+        let n = file.read_line(&mut buf).await;
+        match n {
+            Ok(0) => {
+                break;
             }
-        }
+            Ok(_) => {}
+            Err(err) => {
+                eprintln!("Error reading file: {}", err);
+                break;
+            }
+        };
 
-        while !map_global_queue.is_empty() {
-            thread::sleep(std::time::Duration::from_millis(100));
-        }
-
-        while !red_global_queue.is_empty() {
-            thread::sleep(std::time::Duration::from_millis(100));
-        }
-
-        exit(0);
-    })
-}
-
-// Function to read a file line by line
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where
-    P: AsRef<Path>,
-{
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
+        inlet_write.send(Box::from(buf.into_bytes())).await.unwrap();
+    }
+    inlet_write.close();
+    master_thread.await.unwrap();
 }

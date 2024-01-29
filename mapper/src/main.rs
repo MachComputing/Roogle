@@ -1,12 +1,11 @@
-use protocol::mapper;
+use protocol::nonblocking::mapper::Mapper;
+use tokio::net::TcpStream;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args: Vec<String> = std::env::args().collect();
 
-    let stream = std::net::TcpStream::connect(&args[1]).unwrap();
-    let mut runner = mapper::Mapper::new(
-        std::io::BufReader::new(stream.try_clone().unwrap()),
-        std::io::BufWriter::new(stream),
-    );
-    runner.start_listening();
+    let stream = TcpStream::connect(&args[1]).await.unwrap();
+    let mut runner = Mapper::new(stream);
+    runner.start_listening().await;
 }

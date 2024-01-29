@@ -1,5 +1,6 @@
 pub mod mapper;
 pub mod master;
+pub mod nonblocking;
 pub mod reduce;
 
 use serde::{Deserialize, Serialize};
