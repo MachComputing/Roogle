@@ -4,6 +4,8 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 
 #[tokio::main]
 async fn main() {
+    console_subscriber::init();
+
     let args: Vec<String> = std::env::args().collect();
     let file = File::open(&args[1]).await.unwrap();
     let mut file = BufReader::new(file);

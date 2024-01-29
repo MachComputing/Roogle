@@ -28,7 +28,8 @@ fn main() {
         .arg("testinputLarger.txt")
         .spawn()
         .expect("failed to execute process");
-    thread::sleep(Duration::from_secs(1));
+    println!("Waiting for master to start");
+    thread::sleep(Duration::from_secs(10));
 
     let start = Instant::now();
     let mappers: Vec<Child> = (0..n_mappers)
