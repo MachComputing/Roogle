@@ -67,4 +67,9 @@ pub enum Payload {
 
     Work { block: Box<[u8]> },
     WorkOk { tokens: HashMap<String, u32> },
+
+    DoneMap,
+    DoneMapOk,
+    DoneReduce,
+    DoneReduceOk,
 }

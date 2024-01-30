@@ -1,7 +1,7 @@
 use crate::nonblocking::protocol::Protocol;
 use crate::Payload;
 use std::collections::HashMap;
-use tokio::io::{BufReader, BufWriter};
+use tokio::io::{AsyncWriteExt, BufReader, BufWriter};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::net::TcpStream;
 
@@ -42,8 +42,23 @@ impl Mapper {
                         .send_msg(&mut self.send_master_socket, payload)
                         .await;
                 }
+                Some(Payload::DoneMap) => {
+                    protocol
+                        .send_msg(&mut self.send_master_socket, Payload::DoneMapOk)
+                        .await;
+
+                    self.send_master_socket
+                        .flush()
+                        .await
+                        .expect("Error trying to flush socket");
+                    break;
+                }
+                Some(p) => {
+                    eprintln!("Error: Unexpected payload: {:?}", p);
+                    continue;
+                }
                 _ => {
-                    return;
+                    break;
                 }
             }
         }

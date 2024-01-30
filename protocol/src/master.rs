@@ -1,6 +1,6 @@
 use crate::{Payload, Protocol};
 use crossbeam::deque::{Injector, Stealer, Worker};
-use std::io::{BufReader, BufWriter, Write};
+use std::io::{BufReader, BufWriter};
 use std::net::TcpListener;
 use std::sync::{Arc, RwLock};
 use std::{iter, thread};

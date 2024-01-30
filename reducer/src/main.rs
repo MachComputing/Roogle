@@ -1,6 +1,5 @@
-use protocol::nonblocking::mapper::Mapper;
-use tokio::net::TcpStream;
 use protocol::nonblocking::reduce::Reducer;
+use tokio::net::TcpStream;
 
 #[tokio::main]
 async fn main() {

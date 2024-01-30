@@ -1,6 +1,6 @@
 use crate::nonblocking::protocol::Protocol;
 use crate::Payload;
-use tokio::io::{BufReader, BufWriter};
+use tokio::io::{AsyncWriteExt, BufReader, BufWriter};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::net::TcpStream;
 
@@ -27,15 +27,30 @@ impl Reducer {
             let payload = protocol.recv_msg(&mut self.recv_master_socket).await;
 
             match payload {
-                Some(Payload::Reduce { tokens }) => {
+                Some(Payload::Reduce { .. }) => {
                     // TODO: Reducer
                     // println!("{:?}", tokens);
                     protocol
                         .send_msg(&mut self.send_master_socket, Payload::ReduceOk)
                         .await;
                 }
+                Some(Payload::DoneReduce) => {
+                    protocol
+                        .send_msg(&mut self.send_master_socket, Payload::DoneReduceOk)
+                        .await;
+
+                    self.send_master_socket
+                        .flush()
+                        .await
+                        .expect("Error trying to flush socket");
+                    break;
+                }
+                Some(p) => {
+                    eprintln!("Error: Unexpected payload: {:?}", p);
+                    continue;
+                }
                 _ => {
-                    return;
+                    break;
                 }
             }
         }

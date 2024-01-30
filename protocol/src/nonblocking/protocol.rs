@@ -30,7 +30,7 @@ impl Protocol {
         if let Err(_) = write_res {
             return;
         }
-        to.flush().await.expect("Error trying to flush socket");
+        // to.flush().await.expect("Error trying to flush socket");
     }
 
     pub async fn recv_msg<S>(&mut self, from: &mut BufReader<S>) -> Option<Payload>
