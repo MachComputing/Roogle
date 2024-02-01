@@ -9,7 +9,8 @@ def main():
             if line.startswith("Lines per second"):
                 lines_per_second_old.append(float(line.split()[-1]))
 
-    with open("./benchmarkResultsLarger_NewLexer", "r") as f:
+    # Change to the new file
+    with open("", "r") as f:
         lines_per_second_new = []
         for line in f:
             if line.startswith("Lines per second"):
