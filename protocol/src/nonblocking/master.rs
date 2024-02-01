@@ -169,7 +169,7 @@ async fn dispatch_reducer(stream: TcpStream, inlet: Receiver<Payload>) {
                 }
             }
         }
-        println!("Processed {} lines", recv_count);
+        // println!("Processed {} lines", recv_count);
     });
 
     sender.await.unwrap();

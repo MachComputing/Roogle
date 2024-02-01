@@ -29,7 +29,7 @@ fn main() {
         .spawn()
         .expect("failed to execute process");
     println!("Waiting for master to start");
-    thread::sleep(Duration::from_secs(10));
+    thread::sleep(Duration::from_secs(2));
 
     let start = Instant::now();
     let mappers: Vec<Child> = (0..n_mappers)

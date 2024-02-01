@@ -29,14 +29,20 @@ impl Mapper {
 
             match payload {
                 Some(Payload::Work { block }) => {
-                    // TODO: Mapper
-                    let block = String::from_utf8(block.to_vec()).unwrap();
+                    let block = block
+                        .iter()
+                        .map(|byte| *byte as char)
+                        .collect::<Vec<char>>();
+
                     let mut tokens: HashMap<String, u32> = HashMap::new();
-                    for word in block.split(|c: char| !c.is_alphanumeric()) {
+                    let lexer = nlp::lexer::Lexer::new(&block);
+
+                    for word in lexer.into_iter() {
                         let word = word.to_lowercase();
                         let count = tokens.entry(word).or_insert(0);
                         *count += 1;
                     }
+
                     let payload = Payload::WorkOk { tokens };
                     protocol
                         .send_msg(&mut self.send_master_socket, payload)
