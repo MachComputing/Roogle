@@ -11,7 +11,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn trim_left(&mut self) {
-        while !self.content.is_empty() && self.content[0].is_whitespace() {
+        while !self.content.is_empty() && !self.content[0].is_alphanumeric() {
             self.content = &self.content[1..];
         }
     }
@@ -19,7 +19,7 @@ impl<'a> Lexer<'a> {
     fn chop(&mut self, n: usize) -> &'a [char] {
         let token = &self.content[0..n];
         self.content = &self.content[n..];
-        token
+        return token;
     }
 
     fn chop_while<P>(&mut self, mut predicate: P) -> &'a [char]
@@ -30,7 +30,7 @@ impl<'a> Lexer<'a> {
         while n < self.content.len() && predicate(&self.content[n]) {
             n += 1;
         }
-        self.chop(n)
+        return self.chop(n);
     }
 
     pub fn next_token(&mut self) -> Option<String> {
@@ -47,7 +47,7 @@ impl<'a> Lexer<'a> {
             let term = self
                 .chop_while(|x| x.is_alphanumeric())
                 .iter()
-                .map(|x| x.to_ascii_lowercase())
+                .map(|x| x.to_lowercase().to_string())
                 .collect::<String>();
             let mut env = SnowballEnv::create(&term);
             english::stem(&mut env);
@@ -55,7 +55,8 @@ impl<'a> Lexer<'a> {
             return Some(stemmed_term);
         }
 
-        return Some(self.chop(1).iter().collect());
+        eprintln!("Unexpected character: {}", self.content[0]);
+        return None;
     }
 }
 
