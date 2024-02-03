@@ -8,13 +8,13 @@ fn main() {
     let n_reducers = args[1].parse::<usize>().unwrap();
     let n_mappers = args[2].parse::<usize>().unwrap();
 
-    let bench_file = "testinputLarger.txt";
+    let bench_file = args[3].clone();
     let mut line_count = 0;
-    let file = std::fs::File::open(bench_file).unwrap();
-    let reader = std::io::BufReader::new(file);
-    for _ in reader.lines() {
-        line_count += 1;
-    }
+    // let file = std::fs::File::open(bench_file).unwrap();
+    // let reader = std::io::BufReader::new(file);
+    // for _ in reader.lines() {
+    //     line_count += 1;
+    // }
 
     Command::new("cargo")
         .arg("build")
@@ -25,15 +25,16 @@ fn main() {
         .unwrap();
 
     let mut master = Command::new("target/release/master")
-        .arg("testinputLarger.txt")
+        .arg(bench_file)
         .spawn()
         .expect("failed to execute process");
     println!("Waiting for master to start");
-    thread::sleep(Duration::from_secs(2));
+    thread::sleep(Duration::from_secs(5));
 
     let start = Instant::now();
     let mappers: Vec<Child> = (0..n_mappers)
         .map(|i| {
+            thread::sleep(Duration::from_millis(100));
             Command::new("target/release/mapper")
                 .arg("127.0.0.1:8000")
                 .spawn()
@@ -43,6 +44,7 @@ fn main() {
 
     let reducers: Vec<Child> = (0..n_reducers)
         .map(|i| {
+            thread::sleep(Duration::from_millis(100));
             Command::new("target/release/reducer")
                 .arg("127.0.0.1:8001")
                 .spawn()

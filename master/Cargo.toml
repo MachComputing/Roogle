@@ -13,5 +13,6 @@ crossbeam = "0.8.4"
 tokio = { version = "1.35.1", features = ["full", "tracing"] }
 console-subscriber = "0.2.0"
 async-channel = "2.1.1"
+xml-rs = "0.8.19"
 
 protocol = { path = "../protocol" }

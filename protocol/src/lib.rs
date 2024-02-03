@@ -1,7 +1,4 @@
-pub mod mapper;
-pub mod master;
 pub mod nonblocking;
-pub mod reduce;
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -65,7 +62,7 @@ pub enum Payload {
     Reduce { tokens: HashMap<String, u32> },
     ReduceOk,
 
-    Work { block: Box<[u8]> },
+    Work { block: String },
     WorkOk { tokens: HashMap<String, u32> },
 
     DoneMap,

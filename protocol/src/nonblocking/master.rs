@@ -20,7 +20,7 @@ impl Master {
         }
     }
 
-    pub async fn dispatch(&self, inlet: Receiver<Box<[u8]>>) {
+    pub async fn dispatch(&self, inlet: Receiver<String>) {
         let (outlet_write, outlet_read) = async_channel::bounded::<Payload>(100);
         let mut map_handles = vec![];
         let mut red_handles = vec![];
@@ -46,6 +46,11 @@ impl Master {
 
             let (stream, _) = connection.unwrap();
 
+            println!(
+                "Connection from {:?} from a {listener_type}",
+                stream.peer_addr().unwrap()
+            );
+
             if listener_type == "mapper" {
                 let inlet = Receiver::clone(&inlet);
                 let outlet_write = Sender::clone(&outlet_write);
@@ -62,7 +67,7 @@ impl Master {
     }
 }
 
-async fn dispatch_mapper(stream: TcpStream, inlet: Receiver<Box<[u8]>>, outlet: Sender<Payload>) {
+async fn dispatch_mapper(stream: TcpStream, inlet: Receiver<String>, outlet: Sender<Payload>) {
     let (recv_socket, send_socket) = stream.into_split();
 
     let sender = tokio::spawn(async move {

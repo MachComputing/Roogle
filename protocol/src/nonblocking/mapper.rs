@@ -29,12 +29,8 @@ impl Mapper {
 
             match payload {
                 Some(Payload::Work { block }) => {
-                    let block = block
-                        .iter()
-                        .map(|byte| *byte as char)
-                        .collect::<Vec<char>>();
-
                     let mut tokens: HashMap<String, u32> = HashMap::new();
+                    let block = block.chars().collect::<Vec<char>>();
                     let lexer = nlp::lexer::Lexer::new(&block);
 
                     for word in lexer.into_iter() {
