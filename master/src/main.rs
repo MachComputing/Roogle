@@ -11,6 +11,11 @@ async fn main() {
     console_subscriber::init();
 
     let args: Vec<String> = std::env::args().collect();
+    if args.len() != 2 {
+        eprintln!("Usage: {name} <bench_file>", name = args[1]);
+        std::process::exit(1);
+    }
+
     let file = File::open(&args[1]).unwrap();
     let file = BufReader::new(file);
     let mut event_reader = EventReader::new(file);
